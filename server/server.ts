@@ -1,6 +1,8 @@
 import * as express from 'express';
 import * as compression from 'compression';
 import * as path from 'path';
+import * as fs from 'fs';
+import { parseImage } from './imageParser';
 import type { Request, Response, NextFunction } from 'express';
 
 class Server {
@@ -11,6 +13,7 @@ class Server {
     this.middleware();
     this.routes();
     this.listen();
+    this.getImageText();
   }
 
   middleware() {
@@ -36,6 +39,17 @@ class Server {
       res.redirect(301, ['https://', req.get('Host'), req.url].join(''));
     } else {
       next();
+    }
+  }
+
+  async getImageText() {
+    try {
+      const img = 'data:image/jpg;base64,' + fs.readFileSync(path.resolve('tests/test_image.jpg'), 'base64');
+      //   console.log('>>>>>>>', img);
+      const text = await parseImage(img);
+      console.log(text);
+    } catch (e) {
+      console.log(e);
     }
   }
 }
