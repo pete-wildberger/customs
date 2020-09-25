@@ -1,0 +1,13 @@
+.loading-container{
+    background-color: black;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    flex-direction: column;
+    color: #fafafa;
+    img {
+        width: 45%;
+    }
+}
