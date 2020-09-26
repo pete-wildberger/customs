@@ -1,5 +1,5 @@
 export interface RecipeLineModel {
-  value: number;
+  value: string;
   unit: string;
   label: string;
 }
