@@ -1,0 +1,18 @@
+.loading-container {
+  background-color: black;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  color: #fafafa;
+}
+
+.loading-container img {
+  width: 45%;
+}
+/*# sourceMappingURL=Loading.css.map */
