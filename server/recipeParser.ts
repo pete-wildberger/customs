@@ -1,4 +1,6 @@
-import { RecipeLineModel } from '../types';
+import { RecipeLineModel, WordSlugModel } from '../types';
+import { CONJUNCTIONS } from './keywords';
+import { UNITS } from './units';
 
 export const numericStartRE = /^[0-9]|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|dozen/i;
 
@@ -6,7 +8,30 @@ export const cleanupText = (raw: string): string[] => {
   return raw.split('\n').filter((item) => item.length > 0);
 };
 
-export const parseRecipeLine = (line: string): RecipeLineModel => {
+export const parseWord = (str: string): WordSlugModel => {
+  let type: string = null;
+  let data: string = null;
+  if (numericStartRE.test(str)) {
+    type = 'value';
+    data = str.replace(/[^0-9/]/g, ' ');
+  } else if (CONJUNCTIONS.includes(str)) {
+    type = 'conjunction';
+    data = str;
+  } else if (UNITS.hasOwnProperty(str)) {
+    type = 'unit';
+    data = UNITS[str];
+  } else {
+    type = 'subject';
+    data = str;
+  }
+
+  return {
+    type,
+    data,
+  };
+};
+
+export const parseRecipeLine = (line: string): RecipeLineModel[] => {
   const split_on_space = line.split(' ');
   const value_idxs = [];
   const unit = [];
@@ -18,14 +43,16 @@ export const parseRecipeLine = (line: string): RecipeLineModel => {
     }
   });
 
-  return {
-    value: value_idxs
-      .map((item, i) => split_on_space[i])
-      .join(' ')
-      .replace(/[^0-9/]/g, ' '),
-    unit: unit.join(' '),
-    label: label.join(' '),
-  };
+  return [
+    {
+      value: value_idxs
+        .map((item, i) => split_on_space[i])
+        .join(' ')
+        .replace(/[^0-9/]/g, ' '),
+      unit: unit.join(' '),
+      label: label.join(' '),
+    },
+  ];
 };
 
 // test for none unit start lines
@@ -46,7 +73,7 @@ export const handleMultiLineItems = (arr: string[]): string[] => {
 
 export const parseRawTextArray = (raw: string[]): RecipeLineModel[] => {
   const reduced = handleMultiLineItems(raw);
-  return reduced.map((l) => parseRecipeLine(l));
+  return reduced.map((l) => parseRecipeLine(l)).flat();
 };
 
 export function testConsecutive(arr: number[]): boolean {

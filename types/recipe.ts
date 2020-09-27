@@ -3,3 +3,8 @@ export interface RecipeLineModel {
   unit: string;
   label: string;
 }
+
+export interface WordSlugModel {
+  type: string;
+  data: string;
+}
