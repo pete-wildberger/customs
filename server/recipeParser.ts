@@ -8,21 +8,21 @@ export const cleanupText = (raw: string): string[] => {
 
 export const parseRecipeLine = (line: string): RecipeLineModel => {
   const split_on_space = line.split(' ');
-  const value = [];
+  const value_idxs = [];
   const unit = [];
   const label = [];
   split_on_space.forEach((item, i) => {
     const is_numeric = numericStartRE.test(item);
     if (is_numeric) {
-      value.push(item);
-    } else if (!is_numeric && numericStartRE.test(split_on_space[i - 1])) {
-      unit.push(item);
-    } else {
-      label.push(item);
+      value_idxs.push(i);
     }
   });
+
   return {
-    value: value.join(' ').replace(/[^0-9/]/g, ' '),
+    value: value_idxs
+      .map((item, i) => split_on_space[i])
+      .join(' ')
+      .replace(/[^0-9/]/g, ' '),
     unit: unit.join(' '),
     label: label.join(' '),
   };
@@ -48,3 +48,7 @@ export const parseRawTextArray = (raw: string[]): RecipeLineModel[] => {
   const reduced = handleMultiLineItems(raw);
   return reduced.map((l) => parseRecipeLine(l));
 };
+
+export function testConsecutive(arr: number[]): boolean {
+  return arr.every((item, i) => (typeof item !== 'number' ? false : i === 0 ? true : item - arr[i - 1] === 1));
+}

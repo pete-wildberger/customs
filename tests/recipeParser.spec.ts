@@ -1,11 +1,27 @@
 import * as chai from 'chai';
 import { readFileSync } from 'fs';
 import * as path from 'path';
-import { cleanupText, handleMultiLineItems, numericStartRE, parseRecipeLine } from '../server/recipeParser';
+import {
+  cleanupText,
+  handleMultiLineItems,
+  numericStartRE,
+  parseRecipeLine,
+  testConsecutive,
+} from '../server/recipeParser';
 
 const expect = chai.expect;
 
 describe('parseRecipe', () => {
+  describe('testConsecutive', () => {
+    it('should return true for an array of consecutive numbers', () => {
+      const consec = [1, 2, 3];
+      expect(testConsecutive(consec)).to.be.true;
+    });
+    it('should return false for an array of non-consecutive numbers', () => {
+      const nonconsec = [10, 2, 6];
+      expect(testConsecutive(nonconsec)).to.be.false;
+    });
+  });
   describe('well_cropped.jpg', () => {
     const raw_image_text = readFileSync(path.resolve('tests/data/well_cropped.txt')).toString();
     describe('cleanupText', () => {
