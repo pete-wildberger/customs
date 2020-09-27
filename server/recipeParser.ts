@@ -33,26 +33,12 @@ export const parseWord = (str: string): WordSlugModel => {
 
 export const parseRecipeLine = (line: string): RecipeLineModel[] => {
   const split_on_space = line.split(' ');
-  const value_idxs = [];
-  const unit = [];
-  const label = [];
-  split_on_space.forEach((item, i) => {
-    const is_numeric = numericStartRE.test(item);
-    if (is_numeric) {
-      value_idxs.push(i);
+  return split_on_space.reduce((acc, item) => {
+    const parsed = parseWord(item);
+    if (parsed.type === 'conjunction') {
     }
-  });
-
-  return [
-    {
-      value: value_idxs
-        .map((item, i) => split_on_space[i])
-        .join(' ')
-        .replace(/[^0-9/]/g, ' '),
-      unit: unit.join(' '),
-      label: label.join(' '),
-    },
-  ];
+    return acc;
+  }, []);
 };
 
 // test for none unit start lines
