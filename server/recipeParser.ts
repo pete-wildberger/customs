@@ -40,7 +40,7 @@ export const parseRecipeLine = (line: string): RecipeLineModel[] => {
     const parsed = parseWord(item);
     if (parsed.type === 'conjunction') {
       const split = line.split(` ${parsed.data} `).map((item) => parseRecipeLine(item));
-      acc = split;
+      acc = [parsed.data, split];
       break;
     } else {
       acc.push(parsed);
@@ -68,16 +68,7 @@ export const handleMultiLineItems = (arr: string[]): string[] => {
 
 export const parseRawTextArray = (raw: string[]): RecipeLineModel[][] => {
   const reduced = handleMultiLineItems(raw);
-  return reduced.reduce((acc, l) => {
-    const parsed = parseRecipeLine(l);
-
-    if (Array.isArray(parsed[0])) {
-      parsed.forEach((p) => acc.push(p));
-    } else {
-      acc.push(parsed);
-    }
-    return acc;
-  }, []);
+  return reduced.map((l) => parseRecipeLine(l));
 };
 
 export function testConsecutive(arr: number[]): boolean {
