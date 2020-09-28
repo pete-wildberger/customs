@@ -4,7 +4,8 @@ export interface RecipeLineModel {
   label: string;
 }
 
-export interface WordSlugModel {
+export interface WordToken {
   type: string;
-  data: string;
+  value: string;
+  raw: string;
 }

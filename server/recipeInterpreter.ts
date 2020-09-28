@@ -1,33 +1,34 @@
-import { RecipeLineModel, WordSlugModel } from '../types';
+import { RecipeLineModel, WordToken } from '../types';
 import { CONJUNCTIONS } from './keywords';
 import { UNITS } from './units';
 
-export const numericStartRE = /^[0-9]|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|dozen/i;
+export const NUMERIC_RE = /[0-9]|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|dozen/i;
 
 export const cleanupText = (raw: string): string[] => {
   return raw.split('\n').filter((item) => item.length > 0);
 };
 
-export const parseWord = (str: string): WordSlugModel => {
+export const parseWord = (str: string): WordToken => {
   let type: string = null;
-  let data: string = null;
-  if (numericStartRE.test(str)) {
+  let value: string = null;
+  if (NUMERIC_RE.test(str)) {
     type = 'value';
-    data = str.replace(/[^0-9/]/g, ' ');
+    value = str.replace(/[^0-9/]/g, ' ');
   } else if (CONJUNCTIONS.includes(str)) {
     type = 'conjunction';
-    data = str;
+    value = str;
   } else if (UNITS.hasOwnProperty(str)) {
     type = 'unit';
-    data = UNITS[str];
+    value = UNITS[str];
   } else {
     type = 'subject';
-    data = str;
+    value = str;
   }
 
   return {
     type,
-    data,
+    value,
+    raw: str,
   };
 };
 
@@ -39,8 +40,8 @@ export const parseRecipeLine = (line: string): RecipeLineModel[] => {
     const item = split_on_space[i];
     const parsed = parseWord(item);
     if (parsed.type === 'conjunction') {
-      const split = line.split(` ${parsed.data} `).map((item) => parseRecipeLine(item));
-      acc = [parsed.data, split];
+      const split = line.split(` ${parsed.value} `).map((item) => parseRecipeLine(item));
+      acc = [parsed.value, split];
       break;
     } else {
       acc.push(parsed);
@@ -54,7 +55,7 @@ export const parseRecipeLine = (line: string): RecipeLineModel[] => {
 //
 export const handleMultiLineItems = (arr: string[]): string[] => {
   return arr.reduce((acc, item, i) => {
-    if (!numericStartRE.test(item)) {
+    if (!NUMERIC_RE.test(item)) {
       if (acc.length) {
         const prev = acc[acc.length - 1];
         acc[acc.length - 1] = prev + item;

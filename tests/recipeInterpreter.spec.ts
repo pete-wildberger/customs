@@ -4,11 +4,10 @@ import * as path from 'path';
 import {
   cleanupText,
   handleMultiLineItems,
-  numericStartRE,
-  parseRecipeLine,
+  NUMERIC_RE,
   testConsecutive,
   parseRawTextArray,
-} from '../server/recipeParser';
+} from '../server/recipeInterpreter';
 
 const expect = chai.expect;
 
@@ -37,8 +36,8 @@ describe('parseRecipe', () => {
     describe('handleMultiLineItems', () => {
       const clean = cleanupText(raw_image_text);
       const arr = handleMultiLineItems(clean);
-      it('should make every item start with a numberic', () => {
-        expect(arr.every((i) => numericStartRE.test(i))).to.be.true;
+      it('should make every item contain a numberic', () => {
+        expect(arr.every((i) => NUMERIC_RE.test(i))).to.be.true;
       });
       it('should concat one item and remove title line that do not start with a numeric', () => {
         expect(arr).to.be.an('array');
