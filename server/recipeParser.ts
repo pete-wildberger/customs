@@ -33,12 +33,21 @@ export const parseWord = (str: string): WordSlugModel => {
 
 export const parseRecipeLine = (line: string): RecipeLineModel[] => {
   const split_on_space = line.split(' ');
-  return split_on_space.reduce((acc, item) => {
+  let acc = [];
+  let i = 0;
+  while (i < split_on_space.length) {
+    const item = split_on_space[i];
     const parsed = parseWord(item);
     if (parsed.type === 'conjunction') {
+      const split = line.split(` ${parsed.data} `).map((item) => parseRecipeLine(item));
+      acc = split;
+      break;
+    } else {
+      acc.push(parsed);
     }
-    return acc;
-  }, []);
+    i++;
+  }
+  return acc;
 };
 
 // test for none unit start lines
@@ -57,9 +66,18 @@ export const handleMultiLineItems = (arr: string[]): string[] => {
   }, []);
 };
 
-export const parseRawTextArray = (raw: string[]): RecipeLineModel[] => {
+export const parseRawTextArray = (raw: string[]): RecipeLineModel[][] => {
   const reduced = handleMultiLineItems(raw);
-  return reduced.map((l) => parseRecipeLine(l)).flat();
+  return reduced.reduce((acc, l) => {
+    const parsed = parseRecipeLine(l);
+
+    if (Array.isArray(parsed[0])) {
+      parsed.forEach((p) => acc.push(p));
+    } else {
+      acc.push(parsed);
+    }
+    return acc;
+  }, []);
 };
 
 export function testConsecutive(arr: number[]): boolean {
