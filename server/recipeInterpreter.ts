@@ -32,7 +32,7 @@ export const parseWord = (str: string): WordToken => {
   };
 };
 
-export const parseRecipeLine = (line: string): RecipeLineModel[] => {
+export const parseRecipeLine = (line: string): WordToken[] => {
   const split_on_space = line.split(' ');
   let acc = [];
   let i = 0;
@@ -40,10 +40,17 @@ export const parseRecipeLine = (line: string): RecipeLineModel[] => {
     const item = split_on_space[i];
     const parsed = parseWord(item);
     if (parsed.type === 'conjunction') {
+      console.log(i, parsed);
+    }
+    if (parsed.type === 'conjunction' && split_on_space.slice(i + 1).some((el) => NUMERIC_RE.test(el))) {
+      console.log('<<<<<<<<<', i, parsed);
       const split = line.split(` ${parsed.value} `).map((item) => parseRecipeLine(item));
       acc = [parsed.value, split];
       break;
     } else {
+      if (parsed.type === 'conjunction') {
+        parsed.type = 'subject';
+      }
       acc.push(parsed);
     }
     i++;
@@ -51,14 +58,14 @@ export const parseRecipeLine = (line: string): RecipeLineModel[] => {
   return acc;
 };
 
-// test for none unit start lines
+// test for none unit lines
 //
 export const handleMultiLineItems = (arr: string[]): string[] => {
   return arr.reduce((acc, item, i) => {
     if (!NUMERIC_RE.test(item)) {
       if (acc.length) {
         const prev = acc[acc.length - 1];
-        acc[acc.length - 1] = prev + item;
+        acc[acc.length - 1] = `${prev} ${item}`;
       }
     } else {
       acc.push(item);
@@ -67,9 +74,33 @@ export const handleMultiLineItems = (arr: string[]): string[] => {
   }, []);
 };
 
-export const parseRawTextArray = (raw: string[]): RecipeLineModel[][] => {
+export const parseRawTextArray = (raw: string[]): RecipeLineModel[] => {
   const reduced = handleMultiLineItems(raw);
-  return reduced.map((l) => parseRecipeLine(l));
+  return reduced.map((l) => {
+    const body = parseRecipeLine(l);
+    const is_split = typeof body[0] !== 'string';
+    return {
+      value: is_split
+        ? body
+            .filter((item) => item.type === 'value')
+            .map((w) => w.value)
+            .join(' ')
+        : 'split',
+      unit: is_split
+        ? body
+            .filter((item) => item.type === 'unit')
+            .map((w) => w.value)
+            .join(' ')
+        : 'split',
+      label: is_split
+        ? body
+            .filter((item) => item.type === 'subject')
+            .map((w) => w.value)
+            .join(' ')
+        : 'split',
+      body,
+    };
+  });
 };
 
 export function testConsecutive(arr: number[]): boolean {
